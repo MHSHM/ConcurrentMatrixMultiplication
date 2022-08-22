@@ -16,27 +16,30 @@ public:
 		m_avaliable_threads = std::min((unsigned int)m_max_threads,
 			std::thread::hardware_concurrency()) - 1; 
 
-		m_threads.reserve(m_avaliable_threads); 
+		m_threads.reserve(m_avaliable_threads);
 
 		for (int i = 0; i < m_avaliable_threads; ++i) 
 		{
-			m_threads.push_back(std::thread(&ThreadPool::ThreadLoop, this));
+			m_threads.emplace_back(std::thread(&ThreadPool::ThreadLoop, this));
 		}
 	}
 
-	~ThreadPool() 
+	void Shutdown()
 	{
 		m_shutdown = true; 
 		
 		m_cond.notify_all();
 
-		for (auto& thread : m_threads) 
+		for (int i = 0; i < m_avaliable_threads; ++i)
 		{
-			thread.join(); 
+			m_threads[i].join();
 		}
 	}
 
 public:
+	
+	std::queue<Task>& GetTasks() { return m_tasks; }
+	
 	void Schedule(const Task& task) 
 	{
 		std::lock_guard<std::mutex> lock(m_lock); 
@@ -55,17 +58,17 @@ private:
 					return !m_tasks.empty() || m_shutdown;
 				});
 
-			if (m_tasks.empty() && m_shutdown) 
+			if (m_shutdown && m_tasks.empty())
 			{
 				return; 
 			}
 
-			Task t = m_tasks.front(); 
+			Task t = std::move(m_tasks.front()); 
 			m_tasks.pop(); 
 
 			lock.unlock(); 
 
-			t(); 
+			t();
 		}
 	}
 
@@ -73,7 +76,7 @@ private:
 	uint16_t m_max_threads; 
 	uint16_t m_avaliable_threads; 
 
-private:
+public:
 	std::mutex m_lock; 
 	std::condition_variable m_cond; 
 	std::vector<std::thread> m_threads; 

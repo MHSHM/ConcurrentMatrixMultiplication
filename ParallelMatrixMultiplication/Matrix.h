@@ -23,7 +23,6 @@ private:
 		return sum;
 	}
 
-private:
 	void GetRow(int i, std::vector<int>& target)
 	{
 		for (int j = 0; j < N; ++j)
@@ -56,6 +55,8 @@ public:
 		return stream;
 	}
 
+	std::vector<std::vector<int>>& GetData() { return data; }
+
 public:
 	Matrix()
 	{
@@ -72,13 +73,13 @@ public:
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
-		std::uniform_int_distribution<std::mt19937::result_type> dist6(1, 10);
+		std::uniform_int_distribution<std::mt19937::result_type> dist10(1, 10);
 
 		for (int i = 0; i < N; ++i)
 		{
 			for (int j = 0; j < N; ++j)
 			{
-				data[i][j] = dist6(rng);
+				data[i][j] = dist10(rng);
 			}
 		}
 
@@ -89,7 +90,7 @@ public:
 
 	}
 
-	void Multiply(const Matrix& matrix, Matrix& result)
+	void Multiply(Matrix& matrix, Matrix& result)
 	{
 		for (int i = 0; i < N; ++i)
 		{
@@ -101,34 +102,34 @@ public:
 			{
 				std::vector<int> col(N, 0);
 
-				GetCol(j, col);
+				matrix.GetCol(j, col);
 
 				uint32_t sum = RowColMulti(row, col);
 
-				result.data[i][j] = sum;
+				result.GetData()[i][j] = sum;
 			}
 		}
 	}
 
-	void ParallelMultiply(const Matrix& matrix, Matrix& result, ThreadPool& pool) 
+	void ParallelMultiply(Matrix& matrix, Matrix& result, ThreadPool& pool)
 	{
 		for (int i = 0; i < N; ++i)
 		{
-			std::vector<int> row(N, 0);
-			GetRow(i, row);
-
 			for (int j = 0; j < N; ++j)
 			{
-				Task t([this, i, j, row, &result]() {
+				Task t([this, i, j, &result, &matrix]() 
+					{
 						std::vector<int> col(N, 0);
-						GetCol(j, col);
-						uint32_t sum;
-						sum = RowColMulti(row, col);
-						result.data[i][j] = sum;
+						std::vector<int> row(N, 0);
+						GetRow(i, row);
+						matrix.GetCol(j, col);
+						result.GetData()[i][j] = RowColMulti(row, col);
 					});
 
 				pool.Schedule(t);
 			}
 		}
+
+		while (pool.GetTasks().size() > 0);
 	}
 };
