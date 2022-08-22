@@ -7,7 +7,7 @@ For a Comaprison between the sequential solution and the parallel solution check
 this function will initialize the matrix with random values in the range 1-10, it's currently the only way to initialize the matrix and the main reason is that i'm too lazy to implement another way.
 
 # Performance
-The test was run on Ryzen 5 3100 with 4 CPU Cores and 8 Threads.
+The test was run on Ryzen 5 3100 with 4 CPU Cores and 8 Threads in a Debug mode.
 
 | Size        | Parallel           | Sequential  |
 | ------------- |:-------------:| -----:|
