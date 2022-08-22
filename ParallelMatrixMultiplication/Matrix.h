@@ -113,6 +113,7 @@ public:
 
 	void ParallelMultiply(Matrix& matrix, Matrix& result, ThreadPool& pool)
 	{
+		// Schedule all RowColMulti Tasks
 		for (int i = 0; i < N; ++i)
 		{
 			for (int j = 0; j < N; ++j)
@@ -129,7 +130,8 @@ public:
 				pool.Schedule(t);
 			}
 		}
-
+		
+		// Wait for the tasks to finish
 		while (pool.GetTasks().size() > 0);
 	}
 };
