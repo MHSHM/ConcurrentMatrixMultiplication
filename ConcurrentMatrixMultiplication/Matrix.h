@@ -8,7 +8,7 @@ template<uint32_t N>
 class Matrix
 {
 private:
-	std::vector<std::vector<int>> data;
+	std::vector<int> data;
 
 private:
 	int RowColMulti(const std::vector<int>& row, const std::vector<int>& col)
@@ -27,7 +27,7 @@ private:
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			target[j] = data[i][j];
+			target[j] = data[i * N + j];
 		}
 	}
 
@@ -35,7 +35,7 @@ private:
 	{
 		for (int j = 0; j < N; ++j)
 		{
-			target[j] = data[j][i];
+			target[j] = data[j * N + i];
 		}
 	}
 
@@ -46,7 +46,7 @@ public:
 		{
 			for (int j = 0; j < N; ++j)
 			{
-				stream << matrix.data[i][j] << ' ';
+				stream << matrix.data[i * N + j] << ' ';
 			}
 
 			stream << '\n';
@@ -55,17 +55,12 @@ public:
 		return stream;
 	}
 
-	std::vector<std::vector<int>>& GetData() { return data; }
+	std::vector<int>& GetData() { return data; }
 
 public:
 	Matrix()
 	{
-		data.resize(N);
-
-		for (int i = 0; i < N; i++)
-		{
-			data[i].resize(N);
-		}
+		data.resize(N * N);
 	}
 
 
@@ -79,7 +74,7 @@ public:
 		{
 			for (int j = 0; j < N; ++j)
 			{
-				data[i][j] = dist10(rng);
+				data[i * N + j] = dist10(rng);
 			}
 		}
 
@@ -101,12 +96,8 @@ public:
 			for (int j = 0; j < N; ++j)
 			{
 				std::vector<int> col(N, 0);
-
 				matrix.GetCol(j, col);
-
-				uint32_t sum = RowColMulti(row, col);
-
-				result.GetData()[i][j] = sum;
+				result.GetData()[i * N + j] = RowColMulti(row, col);
 			}
 		}
 	}
@@ -124,7 +115,7 @@ public:
 						std::vector<int> row(N, 0);
 						GetRow(i, row);
 						matrix.GetCol(j, col);
-						result.GetData()[i][j] = RowColMulti(row, col);
+						result.GetData()[i * N + j] = RowColMulti(row, col);
 					});
 
 				pool.Schedule(t);

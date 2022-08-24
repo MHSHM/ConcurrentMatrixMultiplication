@@ -6,7 +6,7 @@
 int main()
 {
 	ThreadPool pool(7);
-	Matrix<10> m1, m2, res1, res2;
+	Matrix<1000> m1, m2, res1, res2;
 
 	// Initialize the two matrices with random values [1 - 10]
 	m1.InitializeWithRandom();
@@ -24,11 +24,6 @@ int main()
 	end = std::chrono::steady_clock::now();
 	diff = end - start;
 	std::cout << "Parallel execution time: " << std::chrono::duration <double, std::milli>(diff).count() * 1e-3 << "s" << std::endl;
-
-	std::cout << "\n\n";
-	std::cout << res1; 
-	std::cout << "\n\n\n"; 
-	std::cout << res2;
 
 	pool.Shutdown();
 }
